@@ -14,10 +14,10 @@ session_start();
 <title>I ❤️ SunAddIce</title>
 </head>
 <body>
+<script type="text/javascript" src="submit_form.js"></script>
 
 <?php
 $comment = $name = "";
-$comment_err = $name_err = "";
 $too_frequently = false;
 $allow_comment = true;
 $time_now = time();
@@ -29,22 +29,23 @@ $conn = new mysqli("localhost", $dbuser, $dbpass, $dbname);
 if ($conn->connect_error) {
     die("Unable to connect to database!");
 }
+echo $_SERVER["PHP_SELF"];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if ($time_now - $_SESSION["last_post_time"] <= 10) {
-        $too_frequently = true;
-        $allow_comment = false;
+    if (isset($_SESSION["last_post_time"])) {
+        if ($time_now - $_SESSION["last_post_time"] <= 10) {
+            $too_frequently = true;
+            $allow_comment = false;
+        }
     }
 
-    if (empty($_POST["name"])) {
+    if (strlen(trim($_POST["name"])) == 0) {
         $allow_comment = false;
-        $name_err = "Share your name plz!";
     }
-    if (empty($_POST["comment"])) {
+    if (strlen(trim($_POST["comment"])) == 0) {
         $allow_comment = false;
-        $comment_err = "Give your comment plz!";
     }
-
+    
     if ($allow_comment) {
         $name = strip_input($_POST["name"]);
         $comment = strip_input($_POST["comment"]);
@@ -77,16 +78,16 @@ function strip_input($data) {
 
 Support IceLolly & SunAddIce by leaving a comment!<br><br>
 
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+<form method="post" id="comment_form" action="">
     
     Name:<br>
-    <input type="text" size="20" name="name" value="<?php echo $name; ?>" autofocus>
-    <span class="error"><?php echo $name_err; ?></span>
+    <input type="text" size="20" name="name" id="name" value="<?php echo $name; ?>" autofocus>
+    <span class="error" id="name_error"></span>
     <br><br>
 
     Comment:<br>
-    <input type="text" size="30" name="comment" value="<?php echo $comment; ?>">
-    <span class="error"><?php echo $comment_err; ?></span>
+    <input type="text" size="30" name="comment" id="comment" value="<?php echo $comment; ?>">
+    <span class="error" id="comment_error"></span>
     <br><br>
 
     <?php
@@ -95,7 +96,7 @@ Support IceLolly & SunAddIce by leaving a comment!<br><br>
     }
     ?>
 
-    <input type="submit" name="submit" value="Send">
+    <button type="button" onclick="submit_form()">Send</button>
 </form>
 
 <h2>All Comments</h2>
